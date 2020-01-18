@@ -121,31 +121,24 @@ namespace Planner.Controllers
             var actualAvailabilities = new List<Availability>();
             foreach (var availability in availabilities)
             {
-                System.Diagnostics.Debug.WriteLine("1");
                 // Get shifts that have the user assigned
                 var userShifts = shifts.Where(m => m.Users == availability.Username);
 
                 // If there are no assigned shifts, add the availability.
                 if (!userShifts.Any())
                 {
-                    System.Diagnostics.Debug.WriteLine("2");
                     actualAvailabilities.Add(availability);
                 } else
                 {
-                    System.Diagnostics.Debug.WriteLine(userShifts.Count());
-                    System.Diagnostics.Debug.WriteLine("3");
                     foreach (var userShift in userShifts)
                     {
-                        System.Diagnostics.Debug.WriteLine("4");
                         // User isn't available at all.
                         if (userShift.StartTime == availability.StartTime && userShift.EndTime == availability.EndTime)
                         {
-                            System.Diagnostics.Debug.WriteLine("5");
                         }
                         // User is available before the shift.
                         else if (userShift.StartTime >= availability.StartTime && userShift.EndTime > availability.EndTime)
                         {
-                            System.Diagnostics.Debug.WriteLine("6");
                             // Before
                             availability.EndTime = userShift.StartTime;
                             actualAvailabilities.Add(availability);
@@ -153,7 +146,6 @@ namespace Planner.Controllers
                         // User is available before and after the shift.
                         else if (userShift.StartTime >= availability.StartTime && userShift.EndTime < availability.EndTime)
                         {
-                            System.Diagnostics.Debug.WriteLine("7");
                             // After
                             var extraAvailability = new Availability()
                             {
@@ -171,17 +163,14 @@ namespace Planner.Controllers
                         // User is not available
                         else if (userShift.StartTime < availability.StartTime && userShift.EndTime > availability.EndTime)
                         {
-                            System.Diagnostics.Debug.WriteLine("8");
                         }
                         // User is available after the shift.
                         else if (userShift.StartTime < availability.StartTime && userShift.EndTime <= availability.EndTime)
                         {
-                            System.Diagnostics.Debug.WriteLine("9");
                             availability.StartTime = userShift.EndTime;
                             actualAvailabilities.Add(availability);
                         }
                     }
-                    System.Diagnostics.Debug.WriteLine("10");
                 }
             }
 
