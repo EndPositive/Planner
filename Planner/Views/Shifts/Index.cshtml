@@ -1,0 +1,137 @@
+﻿@model IEnumerable<Planner.Models.Shift>
+
+@{
+    ViewData["Title"] = "Shift planner";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Shift planner</h1>
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<p id="Week"></p>
+<div id="shiftSchedule">
+    @{
+        List<string> days = new List<string>()
+    {
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+        };
+    }
+    @foreach (var day in days)
+    {
+    <div id="@day">
+        <h3>@day</h3>
+        @foreach (var shift in Model)
+        {
+            @if (shift.Date.ToString("dddd") == day)
+            {
+            <div attr-id="@shift.Id">
+                <h5>@shift.Title</h5>
+                <span>@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")</span><br />
+
+                <a class="editIcon" asp-action="Edit" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.edit.svg" alt="Edit shift" /></a>
+                <a class="deleteIcon" asp-action="Delete" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.delete.svg" alt="Delete shift" /></a>
+                @if (String.IsNullOrEmpty(shift.Users))
+                {
+                    <a class="assignIcon" href="#" onclick="openAssignWindow(this,'@shift.Date.ToString("yyyy-MM-dd")')"><img src="~/lib/icons/appbar.group.add.svg" alt="Assign User" /></a>
+                }
+                else
+                {
+                    <span><img id="profileIcon" src="~/lib/icons/appbar.people.svg" alt="People icon" /> @shift.Users</span><br />
+                    <a class="unAssignIcon" href="#" onclick="unAssign(@shift.Id)"><img src="~/lib/icons/appbar.group.delete.svg" alt="Unassign User" /></a>
+                }
+            </div>
+            }
+        }
+    </div>
+    }
+</div>
+<script>
+
+    function openAssignWindow(el, date)
+    {
+        shiftId = el.parentNode.getAttribute("attr-id");
+
+        assignWindow = document.getElementById("assignWindow");
+        if (assignWindow !== null) {
+            assignWindow.parentNode.removeChild(assignWindow);
+        }
+        assignWindow = document.createElement("div");
+        assignWindow.setAttribute("id", "assignWindow");
+        assignWindow.setAttribute("attr-id", shiftId);
+
+        document.getElementsByTagName("BODY")[0].appendChild(assignWindow);
+
+        var xhr = new XMLHttpRequest();
+
+        xhr.addEventListener("load", createAssignWindow);
+
+        xhr.responseType = "json";
+        
+        xhr.open("GET", "/Shifts/availableOnDate?date=" + encodeURIComponent(date));
+        xhr.send();
+    }
+    function createAssignWindow()
+    {
+        if (this.status === 200) {
+            var assignWindow = document.getElementById("assignWindow");
+            var shiftId = assignWindow.getAttribute("attr-id");
+            assignWindow.innerHTML += "<h4>Available users</h4>"
+
+            for (var i = 0; i < this.response.length; i++) {
+                var availability = this.response[i];
+
+                assignWindow.innerHTML +=
+                    "<span onclick='assign(" + availability.Id + "," + shiftId + ")'>" + availability.Username +
+                    " (" + availability.StartTime.slice(0, -3) +
+                    " - " + availability.EndTime.slice(0, -3) +
+                    ")</span><br />"
+            }
+            assignWindow.innerHTML += "<a href=''>Back</a>";
+        } else {
+            console.log(this.status);
+        }
+    }
+
+    function assign(availabilityId, shiftId)
+    {
+        var xhr = new XMLHttpRequest();
+
+        xhr.addEventListener("load", function () {
+            if (this.status == 200) {
+                location.reload();
+            } else {
+                alert("Error " + this.status);
+            }
+        });
+
+        xhr.responseType = "json";
+
+        xhr.open("POST", "/Shifts/assignShift?shiftId=" + shiftId + "&availabilityId=" + availabilityId);
+        xhr.send();
+    }
+
+    function unAssign(shiftId) {
+        var xhr = new XMLHttpRequest();
+
+        xhr.addEventListener("load", function () {
+            if (this.status == 200) {
+                location.reload();
+            } else {
+                alert("Error " + this.status);
+            }
+        });
+
+        xhr.responseType = "json";
+
+        xhr.open("POST", "/Shifts/unAssignShift?id=" + shiftId);
+        xhr.send();
+    }
+</script>
