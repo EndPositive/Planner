@@ -194,7 +194,7 @@ namespace Planner.Controllers
 
         // POST: Shifts/assignShift
         [HttpPost]
-        public async Task<IActionResult> assignShift(int shiftId, long availabilityId)
+        public async Task<IActionResult> assignAvailability(int shiftId, long availabilityId)
         {
             try
             {
@@ -309,6 +309,36 @@ namespace Planner.Controllers
                 }
             }
         }
+
+        public async Task<IActionResult> assignUser(int shiftId, string username)
+        {
+            try
+            {
+                var shift = await _context.Shift.FindAsync(shiftId);
+                if (shift == null)
+                {
+                    return NotFound();
+                }
+
+                shift.Users = username;
+                _context.Update(shift);
+
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ShiftExists(shiftId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
 
         // POST: Shifts/unAssignShift
         [HttpPost]
