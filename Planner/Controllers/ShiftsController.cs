@@ -185,6 +185,8 @@ namespace Planner.Controllers
                 }
             }
 
+            actualAvailabilities = actualAvailabilities.OrderBy(m => m.StartTime - m.EndTime).ToList();
+
             var json = JsonConvert.SerializeObject(actualAvailabilities);
 
             return Content(json);
