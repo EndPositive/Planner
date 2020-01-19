@@ -10,6 +10,7 @@ using Planner.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 
 namespace Planner.Controllers
@@ -39,24 +40,162 @@ namespace Planner.Controllers
         }
 
         // POST: Availabilities/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Date,StartTime,EndTime")] Availability availability)
+        public async Task<IActionResult> Create(DateTime Date, TimeSpan StartTime, TimeSpan EndTime)
         {
-            if (ModelState.IsValid)
-            {
-                availability.Username = User.Identity.Name;
-                _context.Add(availability);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(availability);
+            var availability = new Availability();
+            availability.Date = Date;
+            availability.StartTime = StartTime;
+            availability.EndTime = EndTime;
+            availability.Username = User.Identity.Name;
+            availability.Series = 0;
+            _context.Add(availability);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
+        // POST: Availabilities/CreateDailyEvery
+        [HttpPost]
+        public async Task<IActionResult> CreateDaily(DateTime Date, TimeSpan StartTime, TimeSpan EndTime, int Pattern, DateTime Range)
+        {
+            try
+            {
+                var primary = new Availability();
+                primary.Date = Date;
+                primary.StartTime = StartTime;
+                primary.EndTime = EndTime;
+                primary.Username = User.Identity.Name;
+                primary.Series = 0;
+                _context.Add(primary);
+                await _context.SaveChangesAsync();
+                primary.Series = primary.Id;
+                _context.Update(primary);
+
+                var series = primary.Id;
+
+                var totalDays = (Range - Date).TotalDays;
+                for (var i = 1; i <= totalDays; i++)
+                {
+                    Date = Date.AddDays(1);
+                    if (i % Pattern == 0)
+                    {
+                        var availability = new Availability();
+                        availability.Date = Date;
+                        availability.StartTime = StartTime;
+                        availability.EndTime = EndTime;
+                        availability.Username = User.Identity.Name;
+                        availability.Series = series;
+                        _context.Add(availability);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
+        }
+
+        // POST: Availabilities/CreateDailyWeekdays
+        [HttpPost]
+        public async Task<IActionResult> CreateDailyWeekdays(DateTime Date, TimeSpan StartTime, TimeSpan EndTime, DateTime Range)
+        {
+            try
+            {
+                var primary = new Availability();
+                primary.Date = Date;
+                primary.StartTime = StartTime;
+                primary.EndTime = EndTime;
+                primary.Username = User.Identity.Name;
+                primary.Series = 0;
+                _context.Add(primary);
+                await _context.SaveChangesAsync();
+                primary.Series = primary.Id;
+                _context.Update(primary);
+
+                var series = primary.Id;
+
+                var totalDays = (Range - Date).TotalDays;
+                for (var i = 1; i <= totalDays; i++)
+                {
+                    Date = Date.AddDays(1);
+                    if (!(Date.DayOfWeek == DayOfWeek.Saturday || Date.DayOfWeek == DayOfWeek.Sunday))
+                    {
+                        var availability = new Availability();
+                        availability.Date = Date;
+                        availability.StartTime = StartTime;
+                        availability.EndTime = EndTime;
+                        availability.Username = User.Identity.Name;
+                        availability.Series = series;
+                        _context.Add(availability);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
+        }
+
+
+        // POST: Availabilities/CreateWeeklyEvery
+        [HttpPost]
+        public async Task<IActionResult> CreateWeekly(DateTime Date, TimeSpan StartTime, TimeSpan EndTime, int Pattern, String[] days, DateTime Range)
+        {
+            try
+            {
+                var primary = new Availability();
+                primary.Date = Date;
+                primary.StartTime = StartTime;
+                primary.EndTime = EndTime;
+                primary.Username = User.Identity.Name;
+                primary.Series = 0;
+                _context.Add(primary);
+                await _context.SaveChangesAsync();
+                primary.Series = primary.Id;
+                _context.Update(primary);
+
+                var series = primary.Id;
+
+                var totalDays = (Range - Date).TotalDays;
+                var weeknumber = 0;
+                for (var i = 1; i <= totalDays + 1; i++)
+                {
+                    Date = Date.AddDays(1);
+                    if (days.Contains(Date.DayOfWeek.ToString().ToLower()) && (weeknumber % Pattern == 0 || weeknumber == 0))
+                    {
+                        var availability = new Availability();
+                        availability.Date = Date;
+                        availability.StartTime = StartTime;
+                        availability.EndTime = EndTime;
+                        availability.Username = User.Identity.Name;
+                        availability.Series = series;
+                        _context.Add(availability);
+                    }
+
+                    if ((i - 1) % 7 == 0) weeknumber++;
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
+        }
+
+
         // GET: Availabilities/Edit/5
-        public async Task<IActionResult> Edit(long? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
@@ -76,7 +215,7 @@ namespace Planner.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(long id, [Bind("Id,Date,StartTime,EndTime")] Availability availability)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Date,StartTime,EndTime")] Availability availability)
         {
             if (id != availability.Id)
             {
@@ -108,7 +247,7 @@ namespace Planner.Controllers
         }
 
         // GET: Availabilities/Delete/5
-        public async Task<IActionResult> Delete(long? id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
@@ -128,7 +267,7 @@ namespace Planner.Controllers
         // POST: Availabilities/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(long id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var availability = await _context.Availability.FindAsync(id);
             _context.Availability.Remove(availability);
@@ -136,7 +275,7 @@ namespace Planner.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AvailabilityExists(long id)
+        private bool AvailabilityExists(int id)
         {
             return _context.Availability.Any(e => e.Id == id);
         }

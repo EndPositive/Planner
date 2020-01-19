@@ -2,3 +2,39 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
+
+function createAvailability() {
+    var values = {
+        Date: $("input[name=Date]").val(),
+        StartTime: $("input[name=StartTime").val(),
+        EndTime: $("input[name=EndTime]").val(),
+    };
+    if ($('#enableSeries').is(':checked')) {
+        if ($('input[name=pattern]:checked').val() == "daily") {
+            if ($('input[name=dailyPattern]:checked').val() == "every") {
+                values.Pattern = $("input[name=everyDays]").val();
+                values.Range = $("input[name=range]").val();
+                $.post("/Availabilities/CreateDaily", values, reload);
+            } else if ($('input[name=dailyPattern]:checked').val() == "weekday") {
+                values.Range = $("input[name=range]").val();
+                $.post("/Availabilities/createDailyWeekdays", values, reload);
+            }
+        } else if ($('input[name=pattern]:checked').val() == "weekly") {
+            var days = $("input[name=everyWeeksDays]:checked").map(function () {
+                return $(this).val();
+            }).get();
+            values.Pattern = $("input[name=everyWeeks]").val();
+            values.Range = $("input[name=range]").val();
+            values.Days = days;
+            $.post("/Availabilities/CreateWeekly", values, reload);
+        }
+    } else {
+        $.post("/Availabilities/Create", values, reload);
+    }
+
+    return false;
+}
+
+function reload() {
+    location.reload();
+}

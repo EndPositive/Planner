@@ -7,7 +7,7 @@ namespace Planner.Models
 {
     public class Availability
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
 
         [Display(Name = "Dag")]
         [DisplayFormat(DataFormatString = "{0:d}")]
@@ -28,5 +28,7 @@ namespace Planner.Models
         [Display(Name = "Gebruikersnaam")]
         [HiddenInput]
         public string Username { get; set; }
+
+        public int Series { get; set; }
     }
 }
