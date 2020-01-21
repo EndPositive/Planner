@@ -43,6 +43,8 @@ namespace Planner.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(DateTime Date, TimeSpan StartTime, TimeSpan EndTime)
         {
+            if (StartTime >= EndTime) return BadRequest("bad_times");
+
             var availability = new Availability();
             availability.Date = Date;
             availability.StartTime = StartTime;
@@ -63,6 +65,8 @@ namespace Planner.Controllers
         {
             try
             {
+                if (StartTime >= EndTime) return BadRequest("bad_times");
+
                 var availabilities = new List<Availability>();
 
                 var totalDays = (Range - Date).TotalDays;
@@ -120,6 +124,8 @@ namespace Planner.Controllers
         {
             try
             {
+                if (StartTime >= EndTime) return BadRequest("bad_times");
+
                 var availabilities = new List<Availability>();
 
                 var totalDays = (Range - Date).TotalDays;
@@ -178,6 +184,8 @@ namespace Planner.Controllers
         {
             try
             {
+                if (StartTime >= EndTime) return BadRequest("bad_times");
+
                 var availabilities = new List<Availability>();
 
                 var totalDays = (Range - Date).TotalDays;
@@ -255,6 +263,8 @@ namespace Planner.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, TimeSpan StartTime, TimeSpan EndTime, DateTime Date)
         {
+            if (StartTime >= EndTime) return BadRequest("bad_times");
+
             var availability = await _context.Availability.FindAsync(id);
             availability.Date = Date;
             availability.StartTime = StartTime;
@@ -275,6 +285,8 @@ namespace Planner.Controllers
         [HttpPost]
         public async Task<IActionResult> EditSeries(int id, TimeSpan StartTime, TimeSpan EndTime)
         {
+            if (StartTime >= EndTime) return BadRequest("bad_times");
+
             var availabilities = from m in _context.Availability select m;
             availabilities = availabilities.Where(m => m.Series == id);
             

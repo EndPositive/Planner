@@ -11,7 +11,9 @@ function PostAvailabilities(endpoint, type, values) {
         success: reload,
         error: function (res) {
             if (res.responseText == "overlap") {
-                alert("You already have an availability during these hours.")
+                alert("You already have an availability during these hours.");
+            } else if (res.responseText == "bad_times") {
+                alert("Incorrect times requested.");
             }
         }
     });
