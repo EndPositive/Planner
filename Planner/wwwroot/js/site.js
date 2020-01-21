@@ -51,14 +51,15 @@ function createAvailability() {
 }
 
 function editAvailability() {
-    var id = $("input[name=Id]").val();
     var values = {
         StartTime: $("input[name=StartTime").val(),
         EndTime: $("input[name=EndTime]").val(),
     };
     if ($('#enableSeries').is(':checked')) {
-        PostAvailabilities("EditSeries/"+id, "POST", values);
+        var series = $("input[name=Series]").val();
+        PostAvailabilities("EditSeries/"+series, "POST", values);
     } else {
+        var id = $("input[name=Id]").val();
         values.Date = $("input[name=Date]").val();
         PostAvailabilities("Edit/" + id, "POST", values);
     }

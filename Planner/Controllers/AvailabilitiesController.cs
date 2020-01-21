@@ -269,19 +269,16 @@ namespace Planner.Controllers
             return Ok();
         }
 
-        // POST: Availabilities/Edit/5
+        // POST: Availabilities/EditSeries/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         public async Task<IActionResult> EditSeries(int id, TimeSpan StartTime, TimeSpan EndTime)
         {
-            var primary = await _context.Availability.FindAsync(id);
-            var series = primary.Series;
-
-            if (series == 0) return BadRequest();
-
             var availabilities = from m in _context.Availability select m;
-            availabilities = availabilities.Where(m => m.Series == series);
+            availabilities = availabilities.Where(m => m.Series == id);
+            
+            if (availabilities.Count() == 0) return BadRequest(); 
 
             foreach (var availability in availabilities)
             {
