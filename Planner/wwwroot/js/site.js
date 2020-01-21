@@ -3,7 +3,7 @@
 
 // Write your JavaScript code.
 
-function PostAvailabilities(endpoint, type, values) {
+function PostAvailabilities(endpoint, type, values = {}) {
     $.ajax({
         url: "/Availabilities/" + endpoint,
         type: type,
@@ -59,11 +59,23 @@ function editAvailability() {
     };
     if ($('#enableSeries').is(':checked')) {
         var series = $("input[name=Series]").val();
-        PostAvailabilities("EditSeries/"+series, "POST", values);
+        PostAvailabilities("EditSeries/" + series, "POST", values);
     } else {
         var id = $("input[name=Id]").val();
         values.Date = $("input[name=Date]").val();
         PostAvailabilities("Edit/" + id, "POST", values);
+    }
+
+    return false;
+}
+
+function deleteAvailability() {
+    if ($('#enableSeries').is(':checked')) {
+        var series = $("input[name=Series]").val();
+        PostAvailabilities("DeleteSeries/" + series, "POST");
+    } else {
+        var id = $("input[name=Id]").val();
+        PostAvailabilities("Delete/" + id, "POST");
     }
 
     return false;

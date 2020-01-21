@@ -329,14 +329,31 @@ namespace Planner.Controllers
         }
 
         // POST: Availabilities/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
         {
             var availability = await _context.Availability.FindAsync(id);
             _context.Availability.Remove(availability);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return Ok();
+        }
+
+        // POST: Availabilities/DeleteSeries/5
+        [HttpPost]
+        public async Task<IActionResult> DeleteSeries(int id)
+        {
+            var availabilities = from m in _context.Availability select m;
+            availabilities = availabilities.Where(m => m.Series == id);
+
+            if (availabilities.Count() == 0) return BadRequest();
+
+            foreach (var availability in availabilities)
+            {
+                _context.Availability.Remove(availability);
+            }
+            
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
         private bool AvailabilityExists(int id)
