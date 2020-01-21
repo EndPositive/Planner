@@ -253,36 +253,52 @@ namespace Planner.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Date,StartTime,EndTime")] Availability availability)
+        public async Task<IActionResult> Edit(int id, TimeSpan StartTime, TimeSpan EndTime, DateTime Date)
         {
-            if (id != availability.Id)
+            var availability = await _context.Availability.FindAsync(id);
+            availability.Date = Date;
+            availability.StartTime = StartTime;
+            availability.EndTime = EndTime;
+            availability.Series = 0;
+
+            if (AvailabilityOverlaps(availability)) return BadRequest("overlap");
+
+            _context.Availability.Update(availability);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        // POST: Availabilities/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        public async Task<IActionResult> EditSeries(int id, TimeSpan StartTime, TimeSpan EndTime)
+        {
+            var primary = await _context.Availability.FindAsync(id);
+            var series = primary.Series;
+
+            if (series == 0) return BadRequest();
+
+            var availabilities = from m in _context.Availability select m;
+            availabilities = availabilities.Where(m => m.Series == series);
+
+            foreach (var availability in availabilities)
             {
-                return NotFound();
+                availability.StartTime = StartTime;
+                availability.EndTime = EndTime;
+
+                if (AvailabilityOverlaps(availability)) return BadRequest("overlap");
             }
 
-            if (ModelState.IsValid)
+            foreach (var availability in availabilities)
             {
-                try
-                {
-                    availability.Username = User.Identity.Name;
-                    _context.Update(availability);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AvailabilityExists(availability.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                _context.Update(availability);
             }
-            return View(availability);
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
 
         // GET: Availabilities/Delete/5

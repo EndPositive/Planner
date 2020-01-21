@@ -3,17 +3,26 @@
 @{
     ViewData["Title"] = "Edit";
 }
-
+<style>
+    #enableSeries:checked ~ #date {
+        display: none;
+    }
+</style>
 <h1>Edit</h1>
 
 <h4>Availability</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form id="editAvailability" onsubmit="return editAvailability()">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
+            @if (Model.Series != 0)
+            {
+                <input type="checkbox" name="series" id="enableSeries" />
+                <label for="enableSeries">Edit the whole series</label>
+            }
+            <div class="form-group" id="date">
                 <label asp-for="Date" class="control-label"></label>
                 <input asp-for="Date" class="form-control" />
                 <span asp-validation-for="Date" class="text-danger"></span>

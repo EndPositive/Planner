@@ -37,6 +37,10 @@
                 @Html.DisplayFor(modelItem => item.EndTime)
             </td>
             <td>
+                @if (item.Series != 0)
+                {
+                    <img style="width: 30px;" src="~/lib/icons/appbar.repeat.svg"/>
+                }
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
             </td>

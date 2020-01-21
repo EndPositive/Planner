@@ -78,6 +78,42 @@ function createAvailability() {
     return false;
 }
 
+function editAvailability() {
+    var id = $("input[name=Id]").val();
+    var values = {
+        StartTime: $("input[name=StartTime").val(),
+        EndTime: $("input[name=EndTime]").val(),
+    };
+    if ($('#enableSeries').is(':checked')) {
+        $.ajax({
+            url: "/Availabilities/EditSeries/"+id,
+            type: "POST",
+            data: values,
+            success: reload,
+            error: function (res) {
+                if (res.responseText == "overlap") {
+                    alert("You already have an availability during these hours.")
+                }
+            }
+        });
+    } else {
+        values.Date = $("input[name=Date]").val();
+        $.ajax({
+            url: "/Availabilities/Edit/"+id,
+            type: "POST",
+            data: values,
+            success: reload,
+            error: function (res) {
+                if (res.responseText == "overlap") {
+                    alert("You already have an availability during these hours.")
+                }
+            }
+        });
+    }
+
+    return false;
+}
+
 function reload() {
-    location.reload();
+    window.location.href = "/Availabilities";
 }
