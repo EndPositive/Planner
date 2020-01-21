@@ -67,6 +67,22 @@ namespace Planner.Controllers
             {
                 if (StartTime >= EndTime) return BadRequest("bad_times");
 
+                var primary = new Availability();
+                primary.Date = Date;
+                primary.StartTime = StartTime;
+                primary.EndTime = EndTime;
+                primary.Username = User.Identity.Name;
+                primary.Series = 0;
+
+                if (AvailabilityOverlaps(primary)) return BadRequest("overlap");
+
+                _context.Add(primary);
+                await _context.SaveChangesAsync();
+                primary.Series = primary.Id;
+                _context.Update(primary);
+
+                var series = primary.Id;
+
                 var availabilities = new List<Availability>();
 
                 var totalDays = (Range - Date).TotalDays;
@@ -86,22 +102,6 @@ namespace Planner.Controllers
                         availabilities.Append(availability);
                     }
                 }
-
-                var primary = new Availability();
-                primary.Date = Date;
-                primary.StartTime = StartTime;
-                primary.EndTime = EndTime;
-                primary.Username = User.Identity.Name;
-                primary.Series = 0;
-
-                if (AvailabilityOverlaps(primary)) return BadRequest("overlap");
-
-                _context.Add(primary);
-                await _context.SaveChangesAsync();
-                primary.Series = primary.Id;
-                _context.Update(primary);
-
-                var series = primary.Id;
 
                 foreach (var availability in availabilities)
                 {
@@ -126,6 +126,22 @@ namespace Planner.Controllers
             {
                 if (StartTime >= EndTime) return BadRequest("bad_times");
 
+                var primary = new Availability();
+                primary.Date = Date;
+                primary.StartTime = StartTime;
+                primary.EndTime = EndTime;
+                primary.Username = User.Identity.Name;
+                primary.Series = 0;
+
+                if (AvailabilityOverlaps(primary)) return BadRequest("overlap");
+
+                _context.Add(primary);
+                await _context.SaveChangesAsync();
+                primary.Series = primary.Id;
+                _context.Update(primary);
+
+                var series = primary.Id;
+
                 var availabilities = new List<Availability>();
 
                 var totalDays = (Range - Date).TotalDays;
@@ -145,22 +161,6 @@ namespace Planner.Controllers
                         availabilities.Add(availability);
                     }
                 }
-
-                var primary = new Availability();
-                primary.Date = Date;
-                primary.StartTime = StartTime;
-                primary.EndTime = EndTime;
-                primary.Username = User.Identity.Name;
-                primary.Series = 0;
-
-                if (AvailabilityOverlaps(primary)) return BadRequest("overlap");
-
-                _context.Add(primary);
-                await _context.SaveChangesAsync();
-                primary.Series = primary.Id;
-                _context.Update(primary);
-
-                var series = primary.Id;
 
                 foreach (var availability in availabilities)
                 {
@@ -186,6 +186,22 @@ namespace Planner.Controllers
             {
                 if (StartTime >= EndTime) return BadRequest("bad_times");
 
+                var primary = new Availability();
+                primary.Date = Date;
+                primary.StartTime = StartTime;
+                primary.EndTime = EndTime;
+                primary.Username = User.Identity.Name;
+                primary.Series = 0;
+
+                if (AvailabilityOverlaps(primary)) return BadRequest("overlap");
+
+                _context.Add(primary);
+                await _context.SaveChangesAsync();
+                primary.Series = primary.Id;
+                _context.Update(primary);
+
+                var series = primary.Id;
+
                 var availabilities = new List<Availability>();
 
                 var totalDays = (Range - Date).TotalDays;
@@ -208,22 +224,6 @@ namespace Planner.Controllers
 
                     if ((i - 1) % 7 == 0) weeknumber++;
                 }
-
-                var primary = new Availability();
-                primary.Date = Date;
-                primary.StartTime = StartTime;
-                primary.EndTime = EndTime;
-                primary.Username = User.Identity.Name;
-                primary.Series = 0;
-
-                if (AvailabilityOverlaps(primary)) return BadRequest("overlap");
-
-                _context.Add(primary);
-                await _context.SaveChangesAsync();
-                primary.Series = primary.Id;
-                _context.Update(primary);
-
-                var series = primary.Id;
 
                 foreach (var availability in availabilities)
                 {
