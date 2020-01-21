@@ -3,6 +3,20 @@
 
 // Write your JavaScript code.
 
+function PostAvailabilities(endpoint, type, values) {
+    $.ajax({
+        url: "/Availabilities/" + endpoint,
+        type: type,
+        data: values,
+        success: reload,
+        error: function (res) {
+            if (res.responseText == "overlap") {
+                alert("You already have an availability during these hours.")
+            }
+        }
+    });
+}
+
 function createAvailability() {
     var values = {
         Date: $("input[name=Date]").val(),
@@ -14,32 +28,10 @@ function createAvailability() {
             if ($('input[name=dailyPattern]:checked').val() == "every") {
                 values.Pattern = $("input[name=everyDays]").val();
                 values.Range = $("input[name=range]").val();
-
-                $.ajax({
-                    url: "/Availabilities/CreateDaily",
-                    type: "POST",
-                    data: values,
-                    success: reload,
-                    error: function (res) {
-                        if (res.responseText == "overlap") {
-                            alert("You already have an availability during these hours.")
-                        }
-                    }
-                });
+                PostAvailabilities("CreateDaily", "POST", values);
             } else if ($('input[name=dailyPattern]:checked').val() == "weekday") {
                 values.Range = $("input[name=range]").val();
-
-                $.ajax({
-                    url: "/Availabilities/createDailyWeekdays",
-                    type: "POST",
-                    data: values,
-                    success: reload,
-                    error: function (res) {
-                        if (res.responseText == "overlap") {
-                            alert("You already have an availability during these hours.")
-                        }
-                    }
-                });
+                PostAvailabilities("createDailyWeekdays", "POST", values);
             }
         } else if ($('input[name=pattern]:checked').val() == "weekly") {
             var days = $("input[name=everyWeeksDays]:checked").map(function () {
@@ -49,30 +41,10 @@ function createAvailability() {
             values.Range = $("input[name=range]").val();
             values.Days = days;
 
-            $.ajax({
-                url: "/Availabilities/CreateWeekly",
-                type: "POST",
-                data: values,
-                success: reload,
-                error: function (res) {
-                    if (res.responseText == "overlap") {
-                        alert("You already have an availability during these hours.")
-                    }
-                }
-            });
+            PostAvailabilities("CreateWeekly", "POST", values);
         }
     } else {
-        $.ajax({
-            url: "/Availabilities/Create",
-            type: "POST",
-            data: values,
-            success: reload,
-            error: function (res) {
-                if (res.responseText == "overlap") {
-                    alert("You already have an availability during these hours.")
-                }
-            }
-        });
+        PostAvailabilities("Create", "POST", values);
     }
 
     return false;
@@ -85,30 +57,10 @@ function editAvailability() {
         EndTime: $("input[name=EndTime]").val(),
     };
     if ($('#enableSeries').is(':checked')) {
-        $.ajax({
-            url: "/Availabilities/EditSeries/"+id,
-            type: "POST",
-            data: values,
-            success: reload,
-            error: function (res) {
-                if (res.responseText == "overlap") {
-                    alert("You already have an availability during these hours.")
-                }
-            }
-        });
+        PostAvailabilities("EditSeries/"+id, "POST", values);
     } else {
         values.Date = $("input[name=Date]").val();
-        $.ajax({
-            url: "/Availabilities/Edit/"+id,
-            type: "POST",
-            data: values,
-            success: reload,
-            error: function (res) {
-                if (res.responseText == "overlap") {
-                    alert("You already have an availability during these hours.")
-                }
-            }
-        });
+        PostAvailabilities("Edit/" + id, "POST", values);
     }
 
     return false;
