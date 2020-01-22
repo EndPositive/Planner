@@ -12,17 +12,22 @@
 
 <p id="Week"></p>
 @{
-    DateTime monday = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
+    var date = DateTime.Now.Date;
     if (Context.Request.Query["date"].Count > 0 &&
         Context.Request.Query["date"].ToString() != ""
-        && DateTime.TryParse(Context.Request.Query["date"].ToString(), out monday))
+        && DateTime.TryParse(Context.Request.Query["date"].ToString(), out date))
     {
     }
+    DateTime monday = date.AddDays(-(int)date.DayOfWeek + (int)DayOfWeek.Monday);
+
 }
 <h2>@monday.ToString("MMMM dd") - @monday.AddDays(6).ToString("dd"), @monday.ToString("yyyy")</h2>
 <a href="?date=@monday.AddDays(-7)"><</a>
 <a href="?date=@monday.AddDays(7)">></a>
 <a href="?date=">now</a>
+<form style="display: inline-block" method="get">
+    <input type="date" name="date" value="@date.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+</form>
 <div id="shiftSchedule">
     @for (var i = 0; i < 7; i++)
     {
