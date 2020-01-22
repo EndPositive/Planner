@@ -183,7 +183,7 @@ namespace Planner.Controllers
 
         // POST: Shifts/assignShift
         [HttpPost]
-        public async Task<IActionResult> assignAvailability(int shiftId, long availabilityId)
+        public async Task<IActionResult> assignAvailability(int shiftId, int availabilityId)
         {
             try
             {
