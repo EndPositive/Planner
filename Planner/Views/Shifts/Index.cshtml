@@ -11,52 +11,53 @@
 </p>
 
 <p id="Week"></p>
-<div id="shiftSchedule">
-    @{
-        List<string> days = new List<string>()
+@{
+    DateTime monday = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
+    if (Context.Request.Query["date"].Count > 0 &&
+        Context.Request.Query["date"].ToString() != ""
+        && DateTime.TryParse(Context.Request.Query["date"].ToString(), out monday))
     {
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday"
-        };
     }
-    @foreach (var day in days)
+}
+<h2>@monday.ToString("MMMM dd") - @monday.AddDays(6).ToString("dd"), @monday.ToString("yyyy")</h2>
+<a href="?date=@monday.AddDays(-7)"><</a>
+<a href="?date=@monday.AddDays(7)">></a>
+<a href="?date=">now</a>
+<div id="shiftSchedule">
+    @for (var i = 0; i < 7; i++)
     {
-    <div id="@day">
-        <h3>@day</h3>
-        @foreach (var shift in Model)
-        {
-            @if (shift.Date.ToString("dddd") == day)
+        <div id="@monday.AddDays(i).ToString("dddd")">
+            <h3>@monday.AddDays(i).ToString("dddd dd")</h3>
+            @foreach (var shift in Model)
             {
-            <div attr-id="@shift.Id">
-                <h5>@shift.Title</h5>
-                <span>@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")</span><br />
+                @if (monday.AddDays(i) == shift.Date)
+                {
+                    <div attr-id="@shift.Id">
+                        <h5>@shift.Title</h5>
+                        <span>@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")</span><br />
 
-                <a class="editIcon" asp-action="Edit" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.edit.svg" alt="Edit shift" /></a>
-                <a class="deleteIcon" asp-action="Delete" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.delete.svg" alt="Delete shift" /></a>
-                @if (String.IsNullOrEmpty(shift.Users))
-                {
-                    <a class="assignIcon" href="#" onclick="openAssignWindow(this,'@shift.Date.ToString("yyyy-MM-dd")')"><img src="~/lib/icons/appbar.group.add.svg" alt="Assign User" /></a>
+                        <a class="editIcon" asp-action="Edit" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.edit.svg" alt="Edit shift" /></a>
+                        <a class="deleteIcon" asp-action="Delete" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.delete.svg" alt="Delete shift" /></a>
+                        @if (String.IsNullOrEmpty(shift.Users))
+                        {
+                            <a class="assignIcon" href="#" onclick="openAssignWindow(this,'@shift.Date.ToString("yyyy-MM-dd")')"><img src="~/lib/icons/appbar.group.add.svg" alt="Assign User" /></a>
+                        }
+                        else
+                        {
+                            <span><img id="profileIcon" src="~/lib/icons/appbar.people.svg" alt="People icon" /> @shift.Users</span><br />
+                            <a class="unAssignIcon" href="#" onclick="unAssign(@shift.Id)"><img src="~/lib/icons/appbar.group.delete.svg" alt="Unassign User" /></a>
+                        }
+                    </div>
                 }
-                else
-                {
-                    <span><img id="profileIcon" src="~/lib/icons/appbar.people.svg" alt="People icon" /> @shift.Users</span><br />
-                    <a class="unAssignIcon" href="#" onclick="unAssign(@shift.Id)"><img src="~/lib/icons/appbar.group.delete.svg" alt="Unassign User" /></a>
-                }
-            </div>
             }
-        }
-    </div>
+
+        </div>
     }
 </div>
+
 <script>
 
-    function openAssignWindow(el, date)
-    {
+    function openAssignWindow(el, date) {
         shiftId = el.parentNode.getAttribute("attr-id");
 
         assignWindow = document.getElementById("assignWindow");
@@ -74,13 +75,12 @@
         xhr.addEventListener("load", createAssignWindow);
 
         xhr.responseType = "json";
-        
+
         xhr.open("GET", "/Shifts/availableOnDate?date=" + encodeURIComponent(date));
         xhr.send();
     }
 
-    function createAssignWindow()
-    {
+    function createAssignWindow() {
         if (this.status === 200) {
             var assignWindow = document.getElementById("assignWindow");
             var shiftId = assignWindow.getAttribute("attr-id");
@@ -112,7 +112,7 @@
             });
 
             xhr.responseType = "json";
-        
+
             xhr.open("GET", "/Users");
             xhr.send();
 
@@ -130,8 +130,7 @@
         assignAvailability(availabilityId, shiftId);
     }
 
-    function assignAvailability(availabilityId, shiftId)
-    {
+    function assignAvailability(availabilityId, shiftId) {
         var xhr = new XMLHttpRequest();
 
         xhr.addEventListener("load", function () {
