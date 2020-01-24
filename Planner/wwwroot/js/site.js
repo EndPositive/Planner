@@ -81,6 +81,57 @@ function deleteAvailability() {
     return false;
 }
 
+function PostShifts(endpoint, type, values = {}) {
+    $.ajax({
+        url: "/Shifts/" + endpoint,
+        type: type,
+        data: values,
+        success: reload,
+        error: function (res) {
+            if (res.responseText == "overlap") {
+                alert("You already have a shift during these hours.");
+            } else if (res.responseText == "bad_times") {
+                alert("Incorrect times requested.");
+            }
+        }
+    });
+}
+
+function createShift() {
+    var values = {
+        Title: $("input[name=Title]").val(),
+        Details: $("input[name=Details]").val(),
+        Date: $("input[name=Date]").val(),
+        StartTime: $("input[name=StartTime").val(),
+        EndTime: $("input[name=EndTime]").val(),
+    };
+    if ($('#enableSeries').is(':checked')) {
+        if ($('input[name=pattern]:checked').val() == "daily") {
+            if ($('input[name=dailyPattern]:checked').val() == "every") {
+                values.Pattern = $("input[name=everyDays]").val();
+                values.Range = $("input[name=range]").val();
+                PostShifts("CreateDaily", "POST", values);
+            } else if ($('input[name=dailyPattern]:checked').val() == "weekday") {
+                values.Range = $("input[name=range]").val();
+                PostShifts("createDailyWeekdays", "POST", values);
+            }
+        } else if ($('input[name=pattern]:checked').val() == "weekly") {
+            var days = $("input[name=everyWeeksDays]:checked").map(function () {
+                return $(this).val();
+            }).get();
+            values.Pattern = $("input[name=everyWeeks]").val();
+            values.Range = $("input[name=range]").val();
+            values.Days = days;
+
+            PostShifts("CreateWeekly", "POST", values);
+        }
+    } else {
+        PostShifts("Create", "POST", values);
+    }
+
+    return false;
+}
+
 function reload() {
-    window.location.href = "/Availabilities";
+    window.location.href = "Index";
 }

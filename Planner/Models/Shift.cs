@@ -29,5 +29,7 @@ namespace Planner.Models
         public TimeSpan EndTime { get; set; }
 
         public string Users { get; set; }
+
+        public int Series { get; set; }
     }
 }

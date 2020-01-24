@@ -11,7 +11,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form id="createShift" onsubmit="return createShift()">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
@@ -37,6 +37,63 @@
                 <label asp-for="EndTime" class="control-label"></label>
                 <input asp-for="EndTime" class="form-control" />
                 <span asp-validation-for="EndTime" class="text-danger"></span>
+            </div>
+            <input type="checkbox" name="enableSeries" id="enableSeries" />
+            <label for="enableSeries" class="control-label">Make recurring</label>
+            <div class="form-group" id="series">
+                <label class="control-label">Recurrence pattern</label>
+                <br />
+                <input type="radio" name="pattern" value="daily" id="dailyRadio" checked>
+                <label for="dailyRadio">Daily</label>
+                <input type="radio" name="pattern" value="weekly" id="weeklyRadio" />
+                <label for="weeklyRadio">Weekly</label>
+                <div id="daily">
+                    <label>
+                        <input type="radio" name="dailyPattern" value="every" checked>
+                        Every <input type="number" name="everyDays" value="1" min="1" /> day(s)
+                    </label>
+                    <br />
+                    <label>
+                        <input type="radio" name="dailyPattern" value="weekday">
+                        Every weekday
+                    </label>
+                </div>
+                <div id="weekly">
+                    <label>Recur every <input type="number" name="everyWeeks" value="1" min="1" /> weeks on:</label>
+                    <br />
+                    <label>
+                        <input type="checkbox" name="everyWeeksDays" value="monday" />
+                        Monday
+                    </label>
+                    <label>
+                        <input type="checkbox" name="everyWeeksDays" value="tuesday" />
+                        Tuesday
+                    </label>
+                    <label>
+                        <input type="checkbox" name="everyWeeksDays" value="wednesday" />
+                        Wednesday
+                    </label>
+                    <label>
+                        <input type="checkbox" name="everyWeeksDays" value="thursday" />
+                        Thursday
+                    </label>
+                    <label>
+                        <input type="checkbox" name="everyWeeksDays" value="friday" />
+                        Friday
+                    </label>
+                    <label>
+                        <input type="checkbox" name="everyWeeksDays" value="saturday" />
+                        Saturday
+                    </label>
+                    <label>
+                        <input type="checkbox" name="everyWeeksDays" value="sunday" />
+                        Sunday
+                    </label>
+                </div>
+                <div class="form-group" id="range">
+                    <label class="control-label">End by: </label>
+                    <input type="date" name="range" class="form-control" />
+                </div>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

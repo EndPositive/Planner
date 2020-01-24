@@ -90,8 +90,8 @@ body {
 #enableSeries:checked ~ #series {
     display: block;
 }
-#createAvailability #dailyRadio:checked ~ #daily,
-#createAvailability #weeklyRadio:checked ~ #weekly {
+#dailyRadio:checked ~ #daily,
+#weeklyRadio:checked ~ #weekly {
     display: block;
     border-top: 1px solid lightgrey;
     border-bottom: 1px solid lightgrey;

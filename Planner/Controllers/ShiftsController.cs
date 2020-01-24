@@ -36,20 +36,183 @@ namespace Planner.Controllers
             return View();
         }
 
-        // POST: Shifts/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Availabilities/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Details,Date,StartTime,EndTime")] Shift shift)
+        public async Task<IActionResult> Create(string Title, string Details, DateTime Date, TimeSpan StartTime, TimeSpan EndTime)
         {
-            if (ModelState.IsValid)
+            if (StartTime >= EndTime) return BadRequest("bad_times");
+
+            var shift = new Shift();
+            shift.Title = Title;
+            shift.Details = Details;
+            shift.Date = Date;
+            shift.StartTime = StartTime;
+            shift.EndTime = EndTime;
+            shift.Series = 0;
+
+            _context.Add(shift);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        // POST: Availabilities/CreateDailyEvery
+        [HttpPost]
+        public async Task<IActionResult> CreateDaily(string Title, string Details, DateTime Date, TimeSpan StartTime, TimeSpan EndTime, int Pattern, DateTime Range)
+        {
+            try
             {
-                _context.Add(shift);
+                if (StartTime >= EndTime) return BadRequest("bad_times");
+
+                var primary = new Shift();
+                primary.Title = Title;
+                primary.Details = Details;
+                primary.Date = Date;
+                primary.StartTime = StartTime;
+                primary.EndTime = EndTime;
+                primary.Series = 0;
+
+                _context.Add(primary);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                primary.Series = primary.Id;
+                _context.Update(primary);
+
+                var series = primary.Id;
+
+                var shifts = new List<Shift>();
+
+                var totalDays = (Range - Date).TotalDays;
+                for (var i = 1; i <= totalDays; i++)
+                {
+                    Date = Date.AddDays(1);
+                    if (i % Pattern == 0)
+                    {
+                        var shift = new Shift();
+                        shift.Title = Title;
+                        shift.Details = Details;
+                        shift.Date = Date;
+                        shift.StartTime = StartTime;
+                        shift.EndTime = EndTime;
+                        shift.Series = series;
+
+                        _context.Add(shift);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok();
             }
-            return View(shift);
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        // POST: Availabilities/CreateDailyWeekdays
+        [HttpPost]
+        public async Task<IActionResult> CreateDailyWeekdays(string Title, string Details, DateTime Date, TimeSpan StartTime, TimeSpan EndTime, DateTime Range)
+        {
+            try
+            {
+                if (StartTime >= EndTime) return BadRequest("bad_times");
+
+                var primary = new Shift();
+                primary.Title = Title;
+                primary.Details = Details;
+                primary.Date = Date;
+                primary.StartTime = StartTime;
+                primary.EndTime = EndTime;
+                primary.Series = 0;
+
+                _context.Add(primary);
+                await _context.SaveChangesAsync();
+                primary.Series = primary.Id;
+                _context.Update(primary);
+
+                var series = primary.Id;
+
+                var shifts = new List<Shift>();
+
+                var totalDays = (Range - Date).TotalDays;
+                for (var i = 1; i <= totalDays; i++)
+                {
+                    Date = Date.AddDays(1);
+                    if (!(Date.DayOfWeek == DayOfWeek.Saturday || Date.DayOfWeek == DayOfWeek.Sunday))
+                    {
+                        var shift = new Shift();
+                        shift.Title = Title;
+                        shift.Details = Details;
+                        shift.Date = Date;
+                        shift.StartTime = StartTime;
+                        shift.EndTime = EndTime;
+                        shift.Series = series;
+
+                        _context.Add(shift);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        // POST: Availabilities/CreateWeeklyEvery
+        [HttpPost]
+        public async Task<IActionResult> CreateWeekly(string Title, string Details, DateTime Date, TimeSpan StartTime, TimeSpan EndTime, int Pattern, String[] days, DateTime Range)
+        {
+            try
+            {
+                if (StartTime >= EndTime) return BadRequest("bad_times");
+
+                var primary = new Shift();
+                primary.Title = Title;
+                primary.Details = Details;
+                primary.Date = Date;
+                primary.StartTime = StartTime;
+                primary.EndTime = EndTime;
+                primary.Series = 0;
+
+                _context.Add(primary);
+                await _context.SaveChangesAsync();
+                primary.Series = primary.Id;
+                _context.Update(primary);
+
+                var series = primary.Id;
+
+                var shifts = new List<Shift>();
+
+                var totalDays = (Range - Date).TotalDays;
+                var weeknumber = 0;
+                for (var i = 1; i <= totalDays + 1; i++)
+                {
+                    Date = Date.AddDays(1);
+                    if (days.Contains(Date.DayOfWeek.ToString().ToLower()) && (weeknumber % Pattern == 0 || weeknumber == 0))
+                    {
+                        var shift = new Shift();
+                        shift.Title = Title;
+                        shift.Details = Details;
+                        shift.Date = Date;
+                        shift.StartTime = StartTime;
+                        shift.EndTime = EndTime;
+                        shift.Series = series;
+
+                        _context.Add(shift);
+                    }
+
+                    if ((i - 1) % 7 == 0) weeknumber++;
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
         }
 
         // GET: Shifts/Edit/5
