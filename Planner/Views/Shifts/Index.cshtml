@@ -37,7 +37,7 @@
             {
                 @if (monday.AddDays(i) == shift.Date)
                 {
-                    <div attr-id="@shift.Id">
+                    <div class="shift @(String.IsNullOrEmpty(shift.Users) ? "unassigned" : "assigned") " attr-id="@shift.Id" attr-users="@shift.Users">
                         <h5>@shift.Title</h5>
                         <span>@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")</span><br />
 

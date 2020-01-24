@@ -145,6 +145,14 @@ body {
     margin-left: -2.5px;
     margin-top: -2.5px;
 }
+#shiftSchedule .shift.unassigned {
+    background-color: red;
+    color: white;
+}
+#shiftSchedule .shift.assigned {
+    background-color: green;
+    color: white;
+}
 #shiftSchedule > div > div a {
     opacity: 0;
     height: 30px;
