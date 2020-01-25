@@ -1,0 +1,66 @@
+﻿@model List<Day>
+
+@{
+    ViewData["Title"] = "Shift planner";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Shift planner</h1>
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<p id="Week"></p>
+@{
+    DateTime date = ViewBag.date;
+}
+<h2>@Model[0].Date.ToString("MMMM dd") - @Model[6].Date.ToString("dd"), @Model[0].Date.ToString("yyyy")</h2>
+<a href="?date=@Model[0].Date.AddDays(-7)"><</a>
+<a href="?date=@Model[0].Date.AddDays(7)">></a>
+<a href="?date=">now</a>
+<form style="display: inline-block" method="get">
+    <input type="date" name="date" value="@date.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+    <select name="calendar" onchange="this.form.submit()">
+        <option value="@ViewBag.SelectedType" selected>@ViewBag.SelectedType</option>
+        @if (ViewBag.SelectedType != "All")
+        {
+            <option value="All">All</option>
+        }
+
+        @foreach (var type in ViewBag.Types)
+        {
+            if (type != ViewBag.SelectedType)
+            {
+                <option value="@type">@type</option>
+            }
+        }
+    </select>
+</form>
+
+<div id="shiftSchedule">
+    @foreach (var day in Model)
+    {
+        <div id="@day.Date.ToString("dddd")">
+            <h3>@day.Date.ToString("dddd dd")</h3>
+            @foreach (var shift in day.Shifts)
+            {
+                <div class="shift @(String.IsNullOrEmpty(shift.Users) ? "unassigned" : "assigned") " attr-id="@shift.Id" attr-users="@shift.Users">
+                    <h5>@shift.Title</h5>
+                    <span>@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")</span><br />
+
+                    <a class="editIcon" asp-action="Edit" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.edit.svg" alt="Edit shift" /></a>
+                    <a class="deleteIcon" asp-action="Delete" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.delete.svg" alt="Delete shift" /></a>
+                    @if (String.IsNullOrEmpty(shift.Users))
+                    {
+                        <a class="assignIcon" href="#" onclick="openAssignWindow(this,'@shift.Date.ToString("yyyy-MM-dd")')"><img src="~/lib/icons/appbar.group.add.svg" alt="Assign User" /></a>
+                    }
+                    else
+                    {
+                        <span><img id="profileIcon" src="~/lib/icons/appbar.people.svg" alt="People icon" /> @shift.Users</span><br />
+                        <a class="unAssignIcon" href="#" onclick="unAssign(@shift.Id)"><img src="~/lib/icons/appbar.group.delete.svg" alt="Unassign User" /></a>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

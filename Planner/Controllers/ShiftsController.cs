@@ -22,12 +22,52 @@ namespace Planner.Controllers
             _availabilityContext = availabilityContext;
         }
 
-        // GET: Shifts
-        public IActionResult Index()
+        // GET: Shifts/Week
+        [Route("Shifts/")]
+        [Route("Shifts/Index")]
+        [Route("Shifts/Week")]
+        public IActionResult Week(DateTime? date, string calendar = "All")
         {
             var shifts = from m in _context.Shift select m;
-            shifts = shifts.OrderBy(m => m.Date).ThenBy(m => m.Title).ThenBy(m => m.StartTime);
-            return View(shifts);
+
+            // Get available types
+            var types = new List<string>();
+            foreach (var shift in shifts)
+            {
+                if (!types.Contains(shift.Title)) { types.Add(shift.Title); }
+            }
+            ViewBag.Types = types;
+            ViewBag.SelectedType = calendar;
+
+            // Only show current week
+            DateTime trueDate = date ?? DateTime.Now;
+            ViewBag.date = trueDate;
+            DateTime monday = trueDate.AddDays(-(int)trueDate.DayOfWeek + (int)DayOfWeek.Monday);
+
+            shifts = shifts.Where(m => m.Date.Day >= monday.Day && m.Date.Day <= monday.AddDays(6).Day);
+
+            // Only show selected calendar
+            if (calendar != "All")
+            {
+                shifts = shifts.Where(m => m.Title == calendar);
+            }
+
+            // Group by day mon-sun
+            var days = new List<Day>();
+
+            for (var i = 0; i < 7; i++)
+            {
+                var day = new Day {
+                    Date = monday.AddDays(i),
+                    Shifts = shifts.Where(m => m.Date.Day == monday.AddDays(i).Day)
+                    .OrderBy(m => m.Title)
+                    .ThenBy(m => m.StartTime)
+                    .ToList<Shift>()
+                };                
+                days.Add(day);
+            }
+
+            return View("Week", days);
         }
 
         // GET: Shifts/Create
