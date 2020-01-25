@@ -82,13 +82,14 @@ namespace Planner.Controllers
         {
             if (StartTime >= EndTime) return BadRequest("bad_times");
 
-            var shift = new Shift();
-            shift.Title = Title;
-            shift.Details = Details;
-            shift.Date = Date;
-            shift.StartTime = StartTime;
-            shift.EndTime = EndTime;
-            shift.Series = 0;
+            var shift = new Shift() {
+                Title = Title,
+                Details = Details,
+                Date = Date,
+                StartTime = StartTime,
+                EndTime = EndTime,
+                Series = 0
+            };
 
             _context.Add(shift);
             await _context.SaveChangesAsync();
@@ -103,13 +104,14 @@ namespace Planner.Controllers
             {
                 if (StartTime >= EndTime) return BadRequest("bad_times");
 
-                var primary = new Shift();
-                primary.Title = Title;
-                primary.Details = Details;
-                primary.Date = Date;
-                primary.StartTime = StartTime;
-                primary.EndTime = EndTime;
-                primary.Series = 0;
+                var primary = new Shift() {
+                    Title = Title,
+                    Details = Details,
+                    Date = Date,
+                    StartTime = StartTime,
+                    EndTime = EndTime,
+                    Series = 0
+                };
 
                 _context.Add(primary);
                 await _context.SaveChangesAsync();
@@ -126,13 +128,14 @@ namespace Planner.Controllers
                     Date = Date.AddDays(1);
                     if (i % Pattern == 0)
                     {
-                        var shift = new Shift();
-                        shift.Title = Title;
-                        shift.Details = Details;
-                        shift.Date = Date;
-                        shift.StartTime = StartTime;
-                        shift.EndTime = EndTime;
-                        shift.Series = series;
+                        var shift = new Shift() {
+                            Title = Title,
+                            Details = Details,
+                            Date = Date,
+                            StartTime = StartTime,
+                            EndTime = EndTime,
+                            Series = series
+                        };
 
                         _context.Add(shift);
                     }
@@ -155,13 +158,15 @@ namespace Planner.Controllers
             {
                 if (StartTime >= EndTime) return BadRequest("bad_times");
 
-                var primary = new Shift();
-                primary.Title = Title;
-                primary.Details = Details;
-                primary.Date = Date;
-                primary.StartTime = StartTime;
-                primary.EndTime = EndTime;
-                primary.Series = 0;
+                var primary = new Shift()
+                {
+                    Title = Title,
+                    Details = Details,
+                    Date = Date,
+                    StartTime = StartTime,
+                    EndTime = EndTime,
+                    Series = 0
+                };
 
                 _context.Add(primary);
                 await _context.SaveChangesAsync();
@@ -178,13 +183,15 @@ namespace Planner.Controllers
                     Date = Date.AddDays(1);
                     if (!(Date.DayOfWeek == DayOfWeek.Saturday || Date.DayOfWeek == DayOfWeek.Sunday))
                     {
-                        var shift = new Shift();
-                        shift.Title = Title;
-                        shift.Details = Details;
-                        shift.Date = Date;
-                        shift.StartTime = StartTime;
-                        shift.EndTime = EndTime;
-                        shift.Series = series;
+                        var shift = new Shift()
+                        {
+                            Title = Title,
+                            Details = Details,
+                            Date = Date,
+                            StartTime = StartTime,
+                            EndTime = EndTime,
+                            Series = series
+                        };
 
                         _context.Add(shift);
                     }
@@ -207,13 +214,15 @@ namespace Planner.Controllers
             {
                 if (StartTime >= EndTime) return BadRequest("bad_times");
 
-                var primary = new Shift();
-                primary.Title = Title;
-                primary.Details = Details;
-                primary.Date = Date;
-                primary.StartTime = StartTime;
-                primary.EndTime = EndTime;
-                primary.Series = 0;
+                var primary = new Shift()
+                {
+                    Title = Title,
+                    Details = Details,
+                    Date = Date,
+                    StartTime = StartTime,
+                    EndTime = EndTime,
+                    Series = 0
+                };
 
                 _context.Add(primary);
                 await _context.SaveChangesAsync();
@@ -231,13 +240,15 @@ namespace Planner.Controllers
                     Date = Date.AddDays(1);
                     if (days.Contains(Date.DayOfWeek.ToString().ToLower()) && (weeknumber % Pattern == 0 || weeknumber == 0))
                     {
-                        var shift = new Shift();
-                        shift.Title = Title;
-                        shift.Details = Details;
-                        shift.Date = Date;
-                        shift.StartTime = StartTime;
-                        shift.EndTime = EndTime;
-                        shift.Series = series;
+                        var shift = new Shift()
+                        {
+                            Title = Title,
+                            Details = Details,
+                            Date = Date,
+                            StartTime = StartTime,
+                            EndTime = EndTime,
+                            Series = series
+                        };
 
                         _context.Add(shift);
                     }
