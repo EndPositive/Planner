@@ -26,7 +26,7 @@ namespace Planner.Controllers
         public IActionResult Index()
         {
             var shifts = from m in _context.Shift select m;
-            shifts = shifts.OrderBy(m => m.Date).ThenBy(m => m.StartTime);
+            shifts = shifts.OrderBy(m => m.Date).ThenBy(m => m.Title).ThenBy(m => m.StartTime);
             return View(shifts);
         }
 
