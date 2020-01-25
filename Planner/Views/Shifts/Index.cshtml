@@ -27,36 +27,62 @@
 <a href="?date=">now</a>
 <form style="display: inline-block" method="get">
     <input type="date" name="date" value="@date.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+    <select name="calendar" onchange="this.form.submit()">
+        @{
+            if (Context.Request.Query["calendar"].ToString() == "")
+            {
+                <option value="" selected>All</option>
+            }
+            else
+            {
+                <option value="">All</option>
+            }
+
+            var groups = Model.GroupBy(x => x.Title);
+            foreach (var group in groups)
+            {
+                var title = group.Select(x => x.Title).ToList()[0];
+                if (Context.Request.Query["calendar"].ToString() == title)
+                {
+                    <option value="@title" selected>@title</option>
+                }
+                else
+                {
+                    <option value="@title">@title</option>
+                }
+
+            }
+        }
+    </select>
 </form>
 <div id="shiftSchedule">
     @for (var i = 0; i < 7; i++)
     {
-        <div id="@monday.AddDays(i).ToString("dddd")">
-            <h3>@monday.AddDays(i).ToString("dddd dd")</h3>
-            @foreach (var shift in Model)
+    <div id="@monday.AddDays(i).ToString("dddd")">
+        <h3>@monday.AddDays(i).ToString("dddd dd")</h3>
+        @foreach (var shift in Model)
+        {
+            @if (monday.AddDays(i) == shift.Date && (Context.Request.Query["calendar"].ToString() == "" || shift.Title == Context.Request.Query["calendar"].ToString()))
             {
-                @if (monday.AddDays(i) == shift.Date)
-                {
-                    <div class="shift @(String.IsNullOrEmpty(shift.Users) ? "unassigned" : "assigned") " attr-id="@shift.Id" attr-users="@shift.Users">
-                        <h5>@shift.Title</h5>
-                        <span>@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")</span><br />
+                <div class="shift @(String.IsNullOrEmpty(shift.Users) ? "unassigned" : "assigned") " attr-id="@shift.Id" attr-users="@shift.Users">
+                    <h5>@shift.Title</h5>
+                    <span>@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")</span><br />
 
-                        <a class="editIcon" asp-action="Edit" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.edit.svg" alt="Edit shift" /></a>
-                        <a class="deleteIcon" asp-action="Delete" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.delete.svg" alt="Delete shift" /></a>
-                        @if (String.IsNullOrEmpty(shift.Users))
-                        {
-                            <a class="assignIcon" href="#" onclick="openAssignWindow(this,'@shift.Date.ToString("yyyy-MM-dd")')"><img src="~/lib/icons/appbar.group.add.svg" alt="Assign User" /></a>
-                        }
-                        else
-                        {
-                            <span><img id="profileIcon" src="~/lib/icons/appbar.people.svg" alt="People icon" /> @shift.Users</span><br />
-                            <a class="unAssignIcon" href="#" onclick="unAssign(@shift.Id)"><img src="~/lib/icons/appbar.group.delete.svg" alt="Unassign User" /></a>
-                        }
-                    </div>
-                }
+                    <a class="editIcon" asp-action="Edit" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.edit.svg" alt="Edit shift" /></a>
+                    <a class="deleteIcon" asp-action="Delete" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.delete.svg" alt="Delete shift" /></a>
+                    @if (String.IsNullOrEmpty(shift.Users))
+                    {
+                        <a class="assignIcon" href="#" onclick="openAssignWindow(this,'@shift.Date.ToString("yyyy-MM-dd")')"><img src="~/lib/icons/appbar.group.add.svg" alt="Assign User" /></a>
+                    }
+                    else
+                    {
+                        <span><img id="profileIcon" src="~/lib/icons/appbar.people.svg" alt="People icon" /> @shift.Users</span><br />
+                        <a class="unAssignIcon" href="#" onclick="unAssign(@shift.Id)"><img src="~/lib/icons/appbar.group.delete.svg" alt="Unassign User" /></a>
+                    }
+                </div>
             }
-
-        </div>
+        }
+    </div>
     }
 </div>
 
