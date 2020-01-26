@@ -189,6 +189,12 @@ body {
     height: 300px;
     border-radius: 3px;
     box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.1);
-    width: 300px;
     overflow-y: auto;
+}
+table {
+    width: 100%;
+}
+table th {
+    background-color: #333;
+    color: white;
 }

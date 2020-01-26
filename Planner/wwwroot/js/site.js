@@ -132,8 +132,8 @@ function createShift() {
     return false;
 }
 
-function reload() {
-    window.location.href = "Index";
+function reload(controller) {
+    window.location.href = "/" + controller;
 }
 
 function openAssignWindow(el, date) {
@@ -145,6 +145,7 @@ function openAssignWindow(el, date) {
     }
     assignWindow = document.createElement("div");
     assignWindow.setAttribute("id", "assignWindow");
+    assignWindow.setAttribute("class", "container");
     assignWindow.setAttribute("attr-id", shiftId);
 
     document.getElementsByTagName("BODY")[0].appendChild(assignWindow);
@@ -155,27 +156,31 @@ function openAssignWindow(el, date) {
 
     xhr.responseType = "json";
 
-    xhr.open("GET", "/Shifts/availableOnDate?date=" + encodeURIComponent(date));
+    xhr.open("GET", "/Shifts/GetAvailabilitiesForShift?ShiftId=" + encodeURIComponent(shiftId));
     xhr.send();
 }
 
 function createAssignWindow() {
     if (this.status === 200) {
+        console.log(this.response);
         var assignWindow = document.getElementById("assignWindow");
         var shiftId = assignWindow.getAttribute("attr-id");
-        assignWindow.innerHTML += "<h4>Available users</h4><a href=''>Back</a><br />";
 
+        assignWindow.innerHTML += "<h4>Available users</h4><a href=''>Back</a><br />";
         assignWindow.innerHTML += "<p style='margin-bottom: 0;'>Select an available user: </p>";
-        assignWindow.innerHTML += "<select id='selectAvailability' onchange='selectAvailability()'></select>";
-        var select = document.getElementById("selectAvailability");
-        select.innerHTML += "<option selected disabled>Select availability</option>"
+
+        var thead = "<thead><tr><th>User</th><th>Time</th><th>Til date</th><th></th><th></th></thead>";
+        var tbody = "<tbody>";
 
         for (var i = 0; i < this.response.length; i++) {
-            select.innerHTML += "<option value='" + this.response[i].Id + "'>" + this.response[i].Username +
-                " (" + this.response[i].StartTime.slice(0, -3) +
-                " - " + this.response[i].EndTime.slice(0, -3) +
-                ")</option>";
+            var availability = this.response[i].availability
+            tbody += "<tr><td>" + availability.Username + "</td><td>" + availability.StartTime.slice(0, -3) + " - " + availability.EndTime.slice(0, -3) + "</td><td>" + this.response[i].availableTilDate + "</td><td onclick='assign(" + availability.Id + "," + shiftId + ")'>Assign</td><td onclick='assignRecurringly(" + availability.Id + "," + shiftId + "," + this.response[i].availableWeeks + ")'>Assign Recurringly</td></tr>"
         }
+
+        tbody += "</tbody>";
+        var table = "<table>" + thead + tbody + "</table>";
+
+        assignWindow.innerHTML += table;
 
         var xhr = new XMLHttpRequest();
 
@@ -200,21 +205,12 @@ function createAssignWindow() {
     }
 }
 
-function selectAvailability() {
-    var assignWindow = document.getElementById("assignWindow");
-    var shiftId = assignWindow.getAttribute("attr-id");
-    var select = document.getElementById("selectAvailability");
-    var availabilityId = select.options[select.selectedIndex].value;
-
-    assignAvailability(availabilityId, shiftId);
-}
-
-function assignAvailability(availabilityId, shiftId) {
+function assign(availabilityId, shiftId) {
     var xhr = new XMLHttpRequest();
 
     xhr.addEventListener("load", function () {
         if (this.status == 200) {
-            location.reload();
+            reload("Shifts");
         } else {
             alert("Error " + this.status);
         }
@@ -222,7 +218,7 @@ function assignAvailability(availabilityId, shiftId) {
 
     xhr.responseType = "json";
 
-    xhr.open("POST", "/Shifts/assignAvailability?shiftId=" + shiftId + "&availabilityId=" + availabilityId);
+    xhr.open("POST", "/Shifts/Assign?shiftId=" + shiftId + "&assign=" + availabilityId);
     xhr.send();
 }
 
@@ -240,7 +236,7 @@ function assignUser(username, shiftId) {
 
     xhr.addEventListener("load", function () {
         if (this.status == 200) {
-            location.reload();
+            reload("Shifts");
         } else {
             alert("Error " + this.status);
         }
@@ -248,7 +244,24 @@ function assignUser(username, shiftId) {
 
     xhr.responseType = "json";
 
-    xhr.open("POST", "/Shifts/assignUser?shiftId=" + shiftId + "&username=" + username);
+    xhr.open("POST", "/Shifts/Assign?shiftId=" + shiftId + "&assign=" + username);
+    xhr.send();
+}
+
+function assignRecurringly(availabilityId, shiftId, availableWeeks) {
+    var xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("load", function () {
+        if (this.status == 200) {
+            // reload("Shifts");
+        } else {
+            alert("Error " + this.status);
+        }
+    });
+
+    xhr.responseType = "json";
+
+    xhr.open("POST", "/Shifts/AssignRecurringly?shiftId=" + shiftId + "&availabilityId=" + availabilityId + "&availableWeeks=" + availableWeeks);
     xhr.send();
 }
 
@@ -257,7 +270,7 @@ function unAssign(shiftId) {
 
     xhr.addEventListener("load", function () {
         if (this.status == 200) {
-            location.reload();
+            reload("Shifts")
         } else {
             alert("Error " + this.status);
         }
@@ -265,6 +278,6 @@ function unAssign(shiftId) {
 
     xhr.responseType = "json";
 
-    xhr.open("POST", "/Shifts/unAssignShift?id=" + shiftId);
+    xhr.open("POST", "/Shifts/UnAssign?shiftId=" + shiftId);
     xhr.send();
 }
