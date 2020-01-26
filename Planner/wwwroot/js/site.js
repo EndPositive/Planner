@@ -253,7 +253,7 @@ function assignRecurringly(availabilityId, shiftId, availableWeeks) {
 
     xhr.addEventListener("load", function () {
         if (this.status == 200) {
-            // reload("Shifts");
+            reload("Shifts");
         } else {
             alert("Error " + this.status);
         }
