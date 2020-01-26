@@ -52,7 +52,7 @@
                     <a class="deleteIcon" asp-action="Delete" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.delete.svg" alt="Delete shift" /></a>
                     @if (String.IsNullOrEmpty(shift.Users))
                     {
-                        <a class="assignIcon" href="#" onclick="openAssignWindow(this,'@shift.Date.ToString("yyyy-MM-dd")')"><img src="~/lib/icons/appbar.group.add.svg" alt="Assign User" /></a>
+                        <a class="assignIcon" href="#" onclick="openAssignWindow(this)"><img src="~/lib/icons/appbar.group.add.svg" alt="Assign User" /></a>
                     }
                     else
                     {

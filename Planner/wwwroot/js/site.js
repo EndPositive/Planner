@@ -2,16 +2,15 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
-
-function PostAvailabilities(endpoint, type, values = {}) {
+function ajax(controller, action, type, values = {}, success = function () { window.location.href = "/" + controller; }) {
     $.ajax({
-        url: "/Availabilities/" + endpoint,
+        url: "/" + controller + "/" + action,
         type: type,
         data: values,
-        success: reload,
+        success: success,
         error: function (res) {
             if (res.responseText == "overlap") {
-                alert("You already have an availability during these hours.");
+                alert("Overlapping times during these hours.");
             } else if (res.responseText == "bad_times") {
                 alert("Incorrect times requested.");
             }
@@ -30,10 +29,10 @@ function createAvailability() {
             if ($('input[name=dailyPattern]:checked').val() == "every") {
                 values.Pattern = $("input[name=everyDays]").val();
                 values.Range = $("input[name=range]").val();
-                PostAvailabilities("CreateDaily", "POST", values);
+                ajax("Availabilities", "CreateDaily", "POST", values);
             } else if ($('input[name=dailyPattern]:checked').val() == "weekday") {
                 values.Range = $("input[name=range]").val();
-                PostAvailabilities("createDailyWeekdays", "POST", values);
+                ajax("Availabilities", "createDailyWeekdays", "POST", values);
             }
         } else if ($('input[name=pattern]:checked').val() == "weekly") {
             var days = $("input[name=everyWeeksDays]:checked").map(function () {
@@ -43,10 +42,10 @@ function createAvailability() {
             values.Range = $("input[name=range]").val();
             values.Days = days;
 
-            PostAvailabilities("CreateWeekly", "POST", values);
+            ajax("Availabilities", "CreateWeekly", "POST", values);
         }
     } else {
-        PostAvailabilities("Create", "POST", values);
+        ajax("Availabilities", "Create", "POST", values);
     }
 
     return false;
@@ -59,11 +58,11 @@ function editAvailability() {
     };
     if ($('#enableSeries').is(':checked')) {
         var series = $("input[name=Series]").val();
-        PostAvailabilities("EditSeries/" + series, "POST", values);
+        ajax("Availabilities", "EditSeries" + series, "POST", values);
     } else {
         var id = $("input[name=Id]").val();
         values.Date = $("input[name=Date]").val();
-        PostAvailabilities("Edit/" + id, "POST", values);
+        ajax("Availabilities", "Edit/" + id, "POST", values);
     }
 
     return false;
@@ -72,29 +71,13 @@ function editAvailability() {
 function deleteAvailability() {
     if ($('#enableSeries').is(':checked')) {
         var series = $("input[name=Series]").val();
-        PostAvailabilities("DeleteSeries/" + series, "POST");
+        ajax("Availabilities", "DeleteSeries" + series, "POST");
     } else {
         var id = $("input[name=Id]").val();
-        PostAvailabilities("Delete/" + id, "POST");
+        ajax("Availabilities", "Delete" + id, "POST");
     }
 
     return false;
-}
-
-function PostShifts(endpoint, type, values = {}) {
-    $.ajax({
-        url: "/Shifts/" + endpoint,
-        type: type,
-        data: values,
-        success: reload,
-        error: function (res) {
-            if (res.responseText == "overlap") {
-                alert("You already have a shift during these hours.");
-            } else if (res.responseText == "bad_times") {
-                alert("Incorrect times requested.");
-            }
-        }
-    });
 }
 
 function createShift() {
@@ -110,10 +93,10 @@ function createShift() {
             if ($('input[name=dailyPattern]:checked').val() == "every") {
                 values.Pattern = $("input[name=everyDays]").val();
                 values.Range = $("input[name=range]").val();
-                PostShifts("CreateDaily", "POST", values);
+                ajax("Shifts", "CreateDaily", "POST", values);
             } else if ($('input[name=dailyPattern]:checked').val() == "weekday") {
                 values.Range = $("input[name=range]").val();
-                PostShifts("createDailyWeekdays", "POST", values);
+                ajax("Shifts", "createDailyWeekdays", "POST", values);
             }
         } else if ($('input[name=pattern]:checked').val() == "weekly") {
             var days = $("input[name=everyWeeksDays]:checked").map(function () {
@@ -123,26 +106,21 @@ function createShift() {
             values.Range = $("input[name=range]").val();
             values.Days = days;
 
-            PostShifts("CreateWeekly", "POST", values);
+            ajax("Shifts", "CreateWeekly", "POST", values);
         }
     } else {
-        PostShifts("Create", "POST", values);
+        ajax("Shifts", "Create", "POST", values);
     }
 
     return false;
 }
 
-function reload(controller) {
-    window.location.href = "/" + controller;
-}
-
-function openAssignWindow(el, date) {
+function openAssignWindow(el) {
+    // Create a new assignWindow el
     shiftId = el.parentNode.getAttribute("attr-id");
 
-    assignWindow = document.getElementById("assignWindow");
-    if (assignWindow !== null) {
-        assignWindow.parentNode.removeChild(assignWindow);
-    }
+    if ($("#assignWindow").length) assignWindow.remove();
+
     assignWindow = document.createElement("div");
     assignWindow.setAttribute("id", "assignWindow");
     assignWindow.setAttribute("class", "container");
@@ -150,134 +128,73 @@ function openAssignWindow(el, date) {
 
     document.getElementsByTagName("BODY")[0].appendChild(assignWindow);
 
-    var xhr = new XMLHttpRequest();
+    // Request availabilities
+    ajax("Shifts", "GetAvailabilitiesForShift", "GET", { ShiftId: shiftId }, function (data) {
+        var assignWindow = $("#assignWindow");
+        var shiftId = assignWindow.attr("attr-id");
 
-    xhr.addEventListener("load", createAssignWindow);
-
-    xhr.responseType = "json";
-
-    xhr.open("GET", "/Shifts/GetAvailabilitiesForShift?ShiftId=" + encodeURIComponent(shiftId));
-    xhr.send();
-}
-
-function createAssignWindow() {
-    if (this.status === 200) {
-        console.log(this.response);
-        var assignWindow = document.getElementById("assignWindow");
-        var shiftId = assignWindow.getAttribute("attr-id");
-
-        assignWindow.innerHTML += "<h4>Available users</h4><a href=''>Back</a><br />";
-        assignWindow.innerHTML += "<p style='margin-bottom: 0;'>Select an available user: </p>";
+        assignWindow.html(assignWindow.html() + "<h4>Available users</h4><a href=''>Back</a><br />");
+        assignWindow.html(assignWindow.html() + "<p style='margin-bottom: 0;'>Select an available user: </p>");
 
         var thead = "<thead><tr><th>User</th><th>Time</th><th>Til date</th><th></th><th></th></thead>";
         var tbody = "<tbody>";
 
-        for (var i = 0; i < this.response.length; i++) {
-            var availability = this.response[i].availability
-            tbody += "<tr><td>" + availability.Username + "</td><td>" + availability.StartTime.slice(0, -3) + " - " + availability.EndTime.slice(0, -3) + "</td><td>" + this.response[i].availableTilDate + "</td><td onclick='assign(" + availability.Id + "," + shiftId + ")'>Assign</td><td onclick='assignRecurringly(" + availability.Id + "," + shiftId + "," + this.response[i].availableWeeks + ")'>Assign Recurringly</td></tr>"
+        var res = JSON.parse(data);
+
+        for (var i = 0; i < res.length; i++) {
+            var availability = res[i].availability
+            tbody += "<tr><td>" + availability.Username + "</td><td>" + availability.StartTime.slice(0, -3) + " - " + availability.EndTime.slice(0, -3) + "</td><td>" + res[i].availableTilDate + "</td><td onclick='assign(" + availability.Id + "," + shiftId + ")'>Assign</td><td onclick='assignRecurringly(" + availability.Id + "," + shiftId + "," + res[i].availableWeeks + ")'>Assign Recurringly</td></tr>"
         }
 
         tbody += "</tbody>";
         var table = "<table>" + thead + tbody + "</table>";
 
-        assignWindow.innerHTML += table;
+        assignWindow.html(assignWindow.html() + table);
 
-        var xhr = new XMLHttpRequest();
+        // Request user list
+        ajax("Users", "Index", "Get", {}, function (data) {
+            var assignWindow = $("#assignWindow");
+            assignWindow.html(assignWindow.html() + "<p style='margin-bottom: 0;'>Select any user: </p>");
+            assignWindow.html(assignWindow.html() + "<select id='selectUser' onchange='selectUser()'></select>");
 
-        xhr.addEventListener("load", function () {
-            var assignWindow = document.getElementById("assignWindow");
-            assignWindow.innerHTML += "<p style='margin-bottom: 0;'>Select any user: </p>";
-            assignWindow.innerHTML += "<select id='selectUser' onchange='selectUser()'></select>";
-            var select = document.getElementById("selectUser");
-            select.innerHTML += "<option selected disabled>Select user</option>"
-            for (var i = 0; i < this.response.length; i++) {
-                select.innerHTML += "<option value='" + this.response[i].UserName + "'>" + this.response[i].UserName + "</option>"
+            var select = $("#selectUser");
+            select.html(select.html() + "<option selected disabled>Select user</option>");
+
+            var res = JSON.parse(data);
+            for (var i = 0; i < res.length; i++) {
+                select.html(select.html() + "<option value='" + res[i].UserName + "'>" + res[i].UserName + "</option>");
             }
         });
-
-        xhr.responseType = "json";
-
-        xhr.open("GET", "/Users");
-        xhr.send();
-
-    } else {
-        console.log(this.status);
-    }
+    });
 }
 
 function assign(availabilityId, shiftId) {
-    var xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("load", function () {
-        if (this.status == 200) {
-            reload("Shifts");
-        } else {
-            alert("Error " + this.status);
-        }
+    ajax("Shifts", "Assign", "POST", {
+        shiftId: shiftId,
+        availabilityId: availabilityId
     });
-
-    xhr.responseType = "json";
-
-    xhr.open("POST", "/Shifts/Assign?shiftId=" + shiftId + "&assign=" + availabilityId);
-    xhr.send();
 }
 
 function selectUser() {
-    var assignWindow = document.getElementById("assignWindow");
-    var shiftId = assignWindow.getAttribute("attr-id");
-    var select = document.getElementById("selectUser");
-    var user = select.options[select.selectedIndex].value;
+    var shiftId = $("#assignWindow").attr("attr-id");
+    var user = $("#selectUser").val();
 
-    assignUser(user, shiftId);
-}
-
-function assignUser(username, shiftId) {
-    var xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("load", function () {
-        if (this.status == 200) {
-            reload("Shifts");
-        } else {
-            alert("Error " + this.status);
-        }
+    ajax("Shifts", "Assign", "POST", {
+        shiftId: shiftId,
+        assign: user
     });
-
-    xhr.responseType = "json";
-
-    xhr.open("POST", "/Shifts/Assign?shiftId=" + shiftId + "&assign=" + username);
-    xhr.send();
 }
 
 function assignRecurringly(availabilityId, shiftId, availableWeeks) {
-    var xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("load", function () {
-        if (this.status == 200) {
-            reload("Shifts");
-        } else {
-            alert("Error " + this.status);
-        }
+    ajax("Shifts", "AssignRecurringly", "POST", {
+        shiftId: shiftId,
+        availabilityId: availabilityId,
+        availableWeeks: availableWeeks
     });
-
-    xhr.responseType = "json";
-
-    xhr.open("POST", "/Shifts/AssignRecurringly?shiftId=" + shiftId + "&availabilityId=" + availabilityId + "&availableWeeks=" + availableWeeks);
-    xhr.send();
 }
 
 function unAssign(shiftId) {
-    var xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("load", function () {
-        if (this.status == 200) {
-            reload("Shifts")
-        } else {
-            alert("Error " + this.status);
-        }
+    ajax("Shifts", "UnAssign", "POST", {
+        shiftId: shiftId
     });
-
-    xhr.responseType = "json";
-
-    xhr.open("POST", "/Shifts/UnAssign?shiftId=" + shiftId);
-    xhr.send();
 }
