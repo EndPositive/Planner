@@ -46,7 +46,13 @@
             {
                 <div class="shift @(String.IsNullOrEmpty(shift.Users) ? "unassigned" : "assigned") " attr-id="@shift.Id" attr-users="@shift.Users">
                     <h5>@shift.Title</h5>
-                    <span>@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")</span><br />
+                    <span>
+                        @if (shift.Series != 0)
+                        {
+                            <img style="width: 20px;" src="~/lib/icons/appbar.repeat.svg" />
+                        }
+                        @shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")
+                    </span><br />
 
                     <a class="editIcon" asp-action="Edit" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.edit.svg" alt="Edit shift" /></a>
                     <a class="deleteIcon" asp-action="Delete" asp-route-id="@shift.Id"><img src="~/lib/icons/appbar.delete.svg" alt="Delete shift" /></a>

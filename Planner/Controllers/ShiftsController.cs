@@ -505,13 +505,14 @@ namespace Planner.Controllers
                 return false;
             }
 
-            // 0
+            // Availability matches Shift
             if (shift.StartTime == availability.StartTime && shift.EndTime == availability.EndTime)
             {
                 shift.Users = availability.Username;
                 _context.Update(shift);
             }
-            // 1
+            // Shift     -----
+            // Avail    -----
             else if (shift.StartTime >= availability.StartTime && shift.EndTime > availability.EndTime)
             {
                 var extraShiftEnd = new Shift()
@@ -521,6 +522,7 @@ namespace Planner.Controllers
                     Date = shift.Date,
                     StartTime = availability.EndTime,
                     EndTime = shift.EndTime,
+                    Series = shift.Series
                 };
                 shift.EndTime = availability.EndTime;
                 shift.Users = availability.Username;
@@ -528,13 +530,15 @@ namespace Planner.Controllers
                 _context.Update(shift);
                 _context.Add(extraShiftEnd);
             }
-            // 2
-            else if (shift.StartTime >= availability.StartTime && shift.EndTime < availability.EndTime)
+            // Shift     ---
+            // Avail    -----
+            else if (shift.StartTime >= availability.StartTime && shift.EndTime <= availability.EndTime)
             {
                 shift.Users = availability.Username;
                 _context.Update(shift);
             }
-            // 3
+            // Shift    ------
+            // Avail     ----
             else if (shift.StartTime < availability.StartTime && shift.EndTime > availability.EndTime)
             {
                 var extraShiftStart = new Shift()
@@ -544,6 +548,7 @@ namespace Planner.Controllers
                     Date = shift.Date,
                     StartTime = shift.StartTime,
                     EndTime = availability.StartTime,
+                    Series = shift.Series
                 };
 
                 var extraShiftEnd = new Shift()
@@ -553,6 +558,7 @@ namespace Planner.Controllers
                     Date = shift.Date,
                     StartTime = availability.EndTime,
                     EndTime = shift.EndTime,
+                    Series = shift.Series
                 };
 
                 shift.StartTime = availability.StartTime;
@@ -563,7 +569,8 @@ namespace Planner.Controllers
                 _context.Add(extraShiftStart);
                 _context.Add(extraShiftEnd);
             }
-            // 4
+            // Shift    -----
+            // Avail     -----
             else if (shift.StartTime < availability.StartTime && shift.EndTime <= availability.EndTime)
             {
                 var extraShiftStart = new Shift()
@@ -573,6 +580,7 @@ namespace Planner.Controllers
                     Date = shift.Date,
                     StartTime = shift.StartTime,
                     EndTime = availability.StartTime,
+                    Series = shift.Series
                 };
                 shift.StartTime = availability.StartTime;
                 shift.Users = availability.Username;
