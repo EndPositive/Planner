@@ -49,9 +49,16 @@
             @Html.DisplayFor(model => model.Users)
         </dd>
     </dl>
-    
-    <form asp-action="Delete">
+
+    <form onsubmit="return deleteShift()">
         <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="Series" />
+
+        @if (Model.Series != 0)
+        {
+            <input type="checkbox" id="enableSeries" />
+            <label for="enableSeries">Delete the whole series</label><br />
+        }
         <input type="submit" value="Delete" class="btn btn-danger" /> |
         <a asp-action="Index">Back to List</a>
     </form>

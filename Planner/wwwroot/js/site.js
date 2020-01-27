@@ -58,7 +58,7 @@ function editAvailability() {
     };
     if ($('#enableSeries').is(':checked')) {
         var series = $("input[name=Series]").val();
-        ajax("Availabilities", "EditSeries" + series, "POST", values);
+        ajax("Availabilities", "EditSeries/" + series, "POST", values);
     } else {
         var id = $("input[name=Id]").val();
         values.Date = $("input[name=Date]").val();
@@ -71,10 +71,10 @@ function editAvailability() {
 function deleteAvailability() {
     if ($('#enableSeries').is(':checked')) {
         var series = $("input[name=Series]").val();
-        ajax("Availabilities", "DeleteSeries" + series, "POST");
+        ajax("Availabilities", "DeleteSeries/" + series, "POST");
     } else {
         var id = $("input[name=Id]").val();
-        ajax("Availabilities", "Delete" + id, "POST");
+        ajax("Availabilities", "Delete/" + id, "POST");
     }
 
     return false;
@@ -110,6 +110,18 @@ function createShift() {
         }
     } else {
         ajax("Shifts", "Create", "POST", values);
+    }
+
+    return false;
+}
+
+function deleteShift() {
+    if ($('#enableSeries').is(':checked')) {
+        var series = $("input[name=Series]").val();
+        ajax("Shifts", "DeleteSeries/" + series, "POST");
+    } else {
+        var id = $("input[name=Id]").val();
+        ajax("Shifts", "Delete/" + id, "POST");
     }
 
     return false;

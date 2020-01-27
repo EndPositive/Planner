@@ -348,15 +348,32 @@ namespace Planner.Controllers
             return View(shift);
         }
 
-        // POST: Shifts/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        // POST: Availabilities/Delete/5
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
         {
             var shift = await _context.Shift.FindAsync(id);
             _context.Shift.Remove(shift);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return Ok();
+        }
+
+        // POST: Availabilities/DeleteSeries/5
+        [HttpPost]
+        public async Task<IActionResult> DeleteSeries(int id)
+        {
+            var shifts = from m in _context.Shift select m;
+            shifts = shifts.Where(m => m.Series == id);
+
+            if (shifts.Count() == 0) return BadRequest();
+
+            foreach (var shift in shifts)
+            {
+                _context.Shift.Remove(shift);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
         private bool ShiftExists(int id)
