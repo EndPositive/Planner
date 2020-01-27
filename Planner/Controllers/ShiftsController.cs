@@ -383,14 +383,14 @@ namespace Planner.Controllers
 
         // POST: Shifts/Assign
         [HttpPost]
-        public IActionResult Assign(int shiftId, string assign)
+        public async Task<IActionResult> Assign(int shiftId, string assign)
         {
             try
             {
                 int availabilityId = 0;
                 if (int.TryParse(assign, out availabilityId))
                 {
-                    if (AssignAvailability(shiftId, availabilityId))
+                    if (await AssignAvailability(shiftId, availabilityId))
                     {
                         return Ok();
                     } else
@@ -400,7 +400,7 @@ namespace Planner.Controllers
                 }
                 else
                 {
-                    if (AssignAvailability(shiftId, assign))
+                    if (await AssignAvailability(shiftId, assign))
                     {
                         return Ok();
                     }
@@ -465,7 +465,7 @@ namespace Planner.Controllers
                         return BadRequest();
                     }
 
-                    if (!AssignAvailability(shiftOnDate.ToList()[0].Id, availabilityOnDate.ToList()[0].Id))
+                    if (!await AssignAvailability(shiftOnDate.ToList()[0].Id, availabilityOnDate.ToList()[0].Id))
                     {
                         return BadRequest();
                     }
@@ -486,15 +486,15 @@ namespace Planner.Controllers
             }
         }
 
-        public bool AssignAvailability(int shiftId, int availabilityId)
+        public async Task<bool> AssignAvailability(int shiftId, int availabilityId)
         {
-            var availability = _availabilityContext.Availability.Find(availabilityId);
+            var availability = await _availabilityContext.Availability.FindAsync(availabilityId);
             if (availability == null)
             {
                 return false;
             }
 
-            var shift = _context.Shift.Find(shiftId);
+            var shift = await _context.Shift.FindAsync(shiftId);
             if (shift == null)
             {
                 return false;
@@ -593,13 +593,13 @@ namespace Planner.Controllers
                 return false;
             }
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return true;
         }
 
-        public bool AssignAvailability(int shiftId, string username)
+        public async Task<bool> AssignAvailability(int shiftId, string username)
         {
-            var shift = _context.Shift.Find(shiftId);
+            var shift = await _context.Shift.FindAsync(shiftId);
             if (shift == null)
             {
                 return false;
@@ -608,7 +608,7 @@ namespace Planner.Controllers
             shift.Users = username;
             _context.Update(shift);
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -643,9 +643,9 @@ namespace Planner.Controllers
         }
 
         // GET: Shifts/GetAvailabilitiesForShift
-        public IActionResult GetAvailabilitiesForShift(int ShiftId)
+        public async Task<IActionResult> GetAvailabilitiesForShift(int ShiftId)
         {
-            var shift = _context.Shift.Find(ShiftId);
+            var shift = await _context.Shift.FindAsync(ShiftId);
             var shifts = from m in _context.Shift select m;
             var availabilities = from m in _availabilityContext.Availability select m;
 
